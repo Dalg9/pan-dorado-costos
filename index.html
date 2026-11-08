@@ -427,8 +427,12 @@ const firebaseConfig = {
 // =============================================
 const MODO_REAL = typeof firebase !== 'undefined';
 
-// Correo del administrador (el que puede editar recetas)
-const ADMIN_EMAIL = 'pan.dorado.villavicencio@gmail.com';
+// Correos autorizados (los únicos que pueden usar la app)
+const CORREOS_PERMITIDOS = [
+  'pan.dorado.villavicencio@gmail.com',
+  'daniel.lopez.gomez@unillanos.edu.co',
+  'esperanzagomezladino@gmail.com'
+];
 
 // Variables de Firebase (solo se usan en modo real)
 let db, auth, provider;
@@ -630,8 +634,13 @@ async function entrarConGoogle() {
     const result = await auth.signInWithPopup(provider);
     const user = result.user;
 
-    // Determinar el rol según el correo
-    const rol = (user.email === ADMIN_EMAIL) ? 'admin' : 'lector';
+    // Verificar que el correo esté autorizado
+    if (!CORREOS_PERMITIDOS.includes(user.email)) {
+      await auth.signOut();
+      alert('⛔ Este correo no tiene acceso. Contacta al administrador.');
+      return;
+    }
+    const rol = 'admin';
 
     sesion = {
       correo: user.email,
@@ -1131,11 +1140,15 @@ renderCostos();
 if (MODO_REAL) {
   auth.onAuthStateChanged(user => {
     if (user && !sesion) {
-      // El usuario ya tenía sesión abierta en Firebase
+      // Verificar que el correo esté autorizado
+      if (!CORREOS_PERMITIDOS.includes(user.email)) {
+        auth.signOut();
+        return;
+      }
       sesion = {
         correo: user.email,
         nombre: user.displayName || user.email.split('@')[0],
-        rol: (user.email === ADMIN_EMAIL) ? 'admin' : 'lector'
+        rol: 'admin'
       };
       abrirApp();
     }
