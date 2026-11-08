@@ -1,0 +1,1151 @@
+<meta charset="UTF-8">
+<title>Pan Dorado Costos</title>
+
+<!-- TIPOGRAFÍAS -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- =============================================
+     FIREBASE SDK (versión "compat" — funciona con <script> normal)
+     Estos archivos se cargan desde los servidores de Google (gstatic.com).
+     En el prototipo de Claude no cargan (dominio no permitido),
+     así que la app pasa a modo demo automáticamente.
+     En GitHub Pages SÍ cargan y la app usa Firebase de verdad.
+     ============================================= -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<style>
+/* =============================================
+   VARIABLES DE COLOR — Paleta dorada de Pan Dorado
+   ============================================= */
+:root {
+  --dorado:        #BE7A2A;
+  --dorado-claro:  #E3A43A;
+  --dorado-hondo:  #9A5F1C;
+  --crema:         #FBF6EE;
+  --crema-2:       #F4ECDF;
+  --cafe-oscuro:   #2A1A10;
+  --cafe-medio:    #7A5338;
+  --blanco:        #FFFFFF;
+  --verde:         #1E5C40;
+  --verde-claro:   #E7F1EA;
+  --amarillo:      #C76A12;
+  --amarillo-claro:#FBEEDC;
+  --rojo:          #A3341B;
+  --rojo-claro:    #F8E8E3;
+  --gris:          #8A8178;
+  --borde:         #E8DECE;
+  --tipo-titulo:   'Fraunces', Georgia, 'Times New Roman', serif;
+  --tipo-texto:    'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --radio:         16px;
+  --sombra:        0 1px 2px rgba(42,26,16,.04), 0 6px 18px -8px rgba(42,26,16,.12);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: var(--tipo-texto);
+  background: var(--crema);
+  color: var(--cafe-oscuro);
+  font-size: 16px;
+  padding-bottom: 80px;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ENCABEZADO */
+.hdr {
+  background: linear-gradient(135deg, var(--dorado-hondo) 0%, var(--dorado) 55%, var(--dorado-claro) 120%);
+  color: var(--blanco);
+  padding: 20px 18px 18px;
+  position: sticky; top: 0; z-index: 99;
+  box-shadow: 0 4px 18px -6px rgba(154,95,28,.45);
+}
+.hdr h1 { font-family: var(--tipo-titulo); font-size: 24px; font-weight: 600; letter-spacing: -.3px; display: flex; align-items: center; gap: 8px; }
+.hdr p  { font-size: 12.5px; opacity: .9; margin-top: 3px; font-weight: 500; }
+
+/* NAVEGACIÓN INFERIOR */
+.nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--blanco); border-top: 1px solid #E0E0E0; display: flex; z-index: 99; box-shadow: 0 -2px 6px rgba(0,0,0,.07); }
+.nb { flex: 1; padding: 10px 4px 8px; border: none; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--gris); font-size: 10px; font-weight: 500; }
+.nb.on { color: var(--dorado); }
+.nb.on .ico { transform: translateY(-1px); }
+.nb .ico { font-size: 22px; transition: transform .2s; }
+
+/* PANTALLAS */
+.pnt { display: none; padding: 14px; }
+.pnt.on { display: block; }
+
+/* TARJETAS */
+.card { background: var(--blanco); border-radius: var(--radio); padding: 16px; margin-bottom: 14px; border: 1px solid var(--borde); box-shadow: var(--sombra); }
+.ctit { font-size: 11px; color: var(--cafe-medio); font-weight: 700; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 11px; }
+
+/* LISTA DE INGREDIENTES */
+.iitem { display: flex; align-items: center; padding: 10px 0; border-bottom: .5px solid #F0F0F0; gap: 10px; }
+.iitem:last-child { border-bottom: none; }
+.inm .nm { font-size: 15px; font-weight: 600; }
+.inm .un { font-size: 11px; color: var(--gris); margin-top: 1px; }
+.inm { flex: 1; }
+.pw { display: flex; align-items: center; background: var(--crema); border: 1.5px solid var(--borde); border-radius: 8px; padding: 4px 8px; min-width: 118px; }
+.pw:focus-within { border-color: var(--dorado); }
+.pw span { color: var(--cafe-medio); font-size: 13px; font-weight: 600; }
+.pi { width: 100%; border: none; background: none; font-size: 15px; font-weight: 700; color: var(--cafe-oscuro); text-align: right; outline: none; min-width: 68px; }
+
+/* BOTONES */
+.btnp { width: 100%; background: linear-gradient(135deg, var(--dorado-hondo), var(--dorado) 70%); color: var(--blanco); border: none; border-radius: var(--radio); padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 6px; letter-spacing: .2px; box-shadow: 0 6px 16px -6px rgba(154,95,28,.5); transition: transform .12s, box-shadow .12s; }
+.btnp:active { transform: scale(.985); box-shadow: 0 3px 10px -6px rgba(154,95,28,.5); }
+
+/* TOAST */
+.toast { position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%); background: var(--cafe-oscuro); color: var(--blanco); padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity .3s; z-index: 200; white-space: nowrap; }
+.toast.vis { opacity: 1; }
+
+/* TARJETAS DE PRODUCTOS */
+.pcard { background: var(--blanco); border-radius: var(--radio); padding: 15px; margin-bottom: 12px; border: 1px solid var(--borde); cursor: pointer; box-shadow: var(--sombra); transition: transform .12s; }
+.pcard:active { transform: scale(.99); }
+.phdr { display: flex; align-items: center; gap: 11px; }
+.pemi { font-size: 30px; line-height: 1; }
+.pinf { flex: 1; }
+.pnm { font-family: var(--tipo-titulo); font-size: 17px; font-weight: 600; letter-spacing: -.2px; }
+.pun { font-size: 11px; color: var(--gris); margin-top: 2px; }
+.baj { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-top: 5px; }
+.bvd { background: var(--verde-claro); color: var(--verde); }
+.bam { background: var(--amarillo-claro); color: var(--amarillo); }
+.bro { background: var(--rojo-claro); color: var(--rojo); }
+.pprc { text-align: right; flex-shrink: 0; }
+.clb  { font-size: 10px; color: var(--gris); text-transform: uppercase; }
+.cvl  { font-family: var(--tipo-titulo); font-size: 20px; font-weight: 600; color: var(--dorado-hondo); }
+.fch  { font-size: 11px; color: var(--gris); display: inline-block; transition: transform .2s; margin-top: 2px; }
+.fch.rt { transform: rotate(180deg); }
+
+/* DESGLOSE EXPANDIBLE */
+.pdet { display: none; margin-top: 13px; padding-top: 13px; border-top: .5px solid #F0F0F0; }
+.pdet.vis { display: block; }
+.dfil { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; border-bottom: .5px solid #F8F8F8; }
+.dfil:last-child { border-bottom: none; }
+.dfil .dc { color: var(--cafe-medio); }
+.dfil .dv { font-weight: 600; }
+.dsec { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--dorado); letter-spacing: .5px; margin: 10px 0 4px; }
+.pvrow { display: flex; align-items: center; gap: 8px; margin-top: 10px; background: var(--crema); border-radius: 8px; padding: 8px 10px; }
+.pvrow label { font-size: 13px; color: var(--cafe-medio); font-weight: 600; flex: 1; }
+.pvi { width: 110px; border: 1.5px solid var(--dorado-claro); border-radius: 7px; padding: 5px 8px; font-size: 15px; font-weight: 700; text-align: right; background: var(--blanco); outline: none; color: var(--cafe-oscuro); }
+.mrg { text-align: center; padding: 8px; border-radius: 8px; margin-top: 7px; font-size: 13px; font-weight: 700; }
+
+/* RECETAS */
+.ritem { display: flex; align-items: center; padding: 11px 0; border-bottom: .5px solid #F0F0F0; cursor: pointer; gap: 10px; }
+.ritem:last-child { border-bottom: none; }
+.ritem:active { opacity: .7; }
+.remi { font-size: 22px; }
+.rnm  { font-size: 14px; font-weight: 600; }
+.run  { font-size: 11px; color: var(--gris); }
+
+/* MODAL EDITOR */
+.modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 300; align-items: flex-end; justify-content: center; }
+.modal.vis { display: flex; }
+.mbox { background: var(--blanco); border-radius: 16px 16px 0 0; padding: 16px; width: 100%; max-height: 88vh; overflow-y: auto; }
+.mhdr { display: flex; align-items: center; margin-bottom: 14px; }
+.mtit { font-size: 16px; font-weight: 700; flex: 1; }
+.mcls { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--gris); padding: 2px; }
+.mfld { margin-bottom: 12px; }
+.mfld label { font-size: 12px; font-weight: 600; color: var(--cafe-medio); display: block; margin-bottom: 4px; }
+.mfld input { width: 100%; border: 1.5px solid var(--borde); border-radius: 8px; padding: 9px 10px; font-size: 15px; color: var(--cafe-oscuro); background: var(--crema); outline: none; }
+.mfld input:focus { border-color: var(--dorado); }
+.seclab { font-size: 11px; font-weight: 700; color: var(--dorado); text-transform: uppercase; letter-spacing: .5px; margin: 13px 0 7px; }
+.ingrow { display: grid; grid-template-columns: 1fr 70px 75px 34px; gap: 5px; align-items: center; margin-bottom: 7px; }
+.ingrow select, .ingrow input { border: 1.5px solid var(--borde); border-radius: 7px; padding: 7px 6px; font-size: 13px; color: var(--cafe-oscuro); background: var(--crema); outline: none; width: 100%; }
+.delibtn { background: var(--rojo-claro); border: none; color: var(--rojo); border-radius: 7px; padding: 7px; font-size: 15px; cursor: pointer; font-weight: 700; width: 100%; }
+.newrec { width:100%; background:var(--verde-claro); color:var(--verde); border:1.5px solid var(--verde); border-radius:12px; padding:14px; font-size:17px; font-weight:700; cursor:pointer; margin-bottom:14px; font-family:inherit; }
+.zborrar { margin-top:22px; padding-top:16px; border-top:1px solid var(--borde); }
+.borrarbtn { width:100%; background:var(--rojo-claro); color:var(--rojo); border:1.5px solid var(--rojo); border-radius:12px; padding:14px; font-size:16px; font-weight:700; cursor:pointer; font-family:inherit; }
+.cancelbtn { width:100%; background:var(--crema-2); color:var(--cafe-oscuro); border:1.5px solid var(--borde); border-radius:12px; padding:14px; font-size:16px; font-weight:600; cursor:pointer; font-family:inherit; }
+.zpreg { font-size:15px; color:var(--rojo); font-weight:600; margin-bottom:12px; line-height:1.4; }
+.zbtns { display:flex; flex-direction:column; gap:10px; }
+.addibtn { background: none; border: 1.5px dashed #CCC; border-radius: 8px; padding: 9px; width: 100%; font-size: 13px; color: var(--cafe-medio); cursor: pointer; margin-top: 4px; }
+.maqgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.maqf label { font-size: 11px; color: var(--cafe-medio); font-weight: 600; display: block; margin-bottom: 3px; }
+.maqf input { border: 1.5px solid var(--borde); border-radius: 7px; padding: 8px; font-size: 15px; font-weight: 700; color: var(--cafe-oscuro); background: var(--crema); outline: none; width: 100%; }
+
+/* PANTALLA OTROS COSTOS */
+.stit { font-family: var(--tipo-titulo); font-size: 22px; font-weight: 600; margin-bottom: 3px; letter-spacing: -.3px; color: var(--cafe-oscuro); }
+.ssub { font-size: 12.5px; color: var(--gris); margin-bottom: 16px; }
+.uact { text-align: center; font-size: 11px; color: var(--gris); padding: 3px 0 12px; }
+.aii { margin-bottom: 13px; }
+.alb  { font-size: 13px; font-weight: 600; color: var(--cafe-medio); margin-bottom: 3px; display: block; }
+.adsc { font-size: 11px; color: var(--gris); margin-bottom: 6px; line-height: 1.5; }
+.ain  { width: 100%; border: 1.5px solid var(--borde); border-radius: 8px; padding: 11px 12px; font-size: 17px; font-weight: 700; color: var(--cafe-oscuro); background: var(--crema); outline: none; }
+.ain:focus { border-color: var(--dorado); }
+.ain2 { width: 76px; border: 1.5px solid var(--borde); border-radius: 8px; padding: 8px; font-size: 15px; font-weight: 700; color: var(--cafe-oscuro); background: var(--crema); outline: none; text-align: center; }
+.mgrow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+.mgcard { background: var(--crema); border-radius: 8px; padding: 10px; text-align: center; }
+.mgcard .mgl { font-size: 11px; color: var(--gris); margin-bottom: 5px; }
+
+/* INICIO DE SESIÓN */
+[hidden] { display: none !important; }
+.login { position: fixed; inset: 0; z-index: 500; overflow-y: auto; background: linear-gradient(180deg, var(--dorado-hondo) 0%, var(--dorado) 34%, var(--crema) 34.1%); display: flex; flex-direction: column; align-items: center; padding: 44px 20px 40px; }
+.login-in { width: 100%; max-width: 380px; }
+.login-marca { text-align: center; color: var(--blanco); margin-bottom: 26px; }
+.login-marca .pan { font-size: 46px; line-height: 1; }
+.login-tit { font-family: var(--tipo-titulo); font-size: 34px; font-weight: 600; margin-top: 8px; letter-spacing: -.5px; }
+.login-sub { font-size: 15px; opacity: .92; margin-top: 4px; }
+.login-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 20px; box-shadow: var(--sombra); padding: 22px 18px; }
+.login-card p.hola { font-family: var(--tipo-titulo); font-size: 21px; font-weight: 600; color: var(--cafe-oscuro); margin-bottom: 6px; }
+.login-card p.expl { font-size: 15px; color: var(--cafe-medio); line-height: 1.45; margin-bottom: 18px; }
+.gbtn { width: 100%; min-height: 58px; display: flex; align-items: center; justify-content: center; gap: 12px; background: var(--blanco); color: var(--cafe-oscuro); border: 2px solid var(--borde); border-radius: 14px; font-size: 18px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.gbtn:active { background: var(--crema); }
+.gbtn .g { width: 30px; height: 30px; border-radius: 50%; background: var(--crema-2); color: var(--dorado-hondo); display: grid; place-items: center; font-family: var(--tipo-titulo); font-size: 18px; font-weight: 700; }
+.cuentas { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.cuentas-tit { font-size: 12px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--cafe-medio); }
+.cuenta { display: flex; align-items: center; gap: 12px; text-align: left; width: 100%; background: var(--crema); border: 1.5px solid var(--borde); border-radius: 14px; padding: 12px; cursor: pointer; font-family: inherit; color: var(--cafe-oscuro); min-height: 62px; }
+.cuenta:active { background: var(--crema-2); }
+.cuenta .av { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--dorado); color: var(--blanco); display: grid; place-items: center; font-weight: 700; font-size: 17px; }
+.cuenta .nm { font-size: 16px; font-weight: 700; display: block; }
+.cuenta .co { font-size: 12.5px; color: var(--gris); display: block; overflow-wrap: anywhere; }
+.login-msg { margin-top: 14px; background: var(--rojo-claro); color: var(--rojo); border-radius: 12px; padding: 12px 14px; font-size: 15px; font-weight: 600; line-height: 1.4; }
+.login-info { margin-top: 16px; background: var(--amarillo-claro); color: var(--amarillo); border-radius: 12px; padding: 10px 12px; font-size: 13px; line-height: 1.4; font-weight: 600; }
+/* Badge de modo en la esquina del header */
+.usr { position: absolute; top: 12px; right: 12px; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
+.usr button { background: rgba(255,255,255,.22); color: var(--blanco); border: 1px solid rgba(255,255,255,.5); border-radius: 999px; padding: 5px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.usr-badge { border-radius: 999px; padding: 2px 8px; font-size: 10.5px; letter-spacing: .6px; }
+.usr-badge.demo { background: var(--amarillo-claro); color: var(--amarillo); }
+.usr-badge.real { background: var(--verde-claro); color: var(--verde); }
+#usr-nom { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* CARGANDO */
+.cargando { text-align: center; padding: 30px; }
+.cargando .spin { display: inline-block; width: 28px; height: 28px; border: 3px solid var(--borde); border-top-color: var(--dorado); border-radius: 50%; animation: girar .7s linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+</style>
+
+<!-- =============================================
+     ENCABEZADO
+     ============================================= -->
+<header class="hdr">
+  <h1>🍞 Panadería Pan Dorado</h1>
+  <p id="hdrsub">Cargando...</p>
+  <div class="usr" id="usr" hidden>
+    <span class="usr-badge" id="usr-badge"></span>
+    <span id="usr-nom"></span>
+    <button onclick="salir()">Salir</button>
+  </div>
+</header>
+
+<div class="toast" id="toast"></div>
+
+<!-- =============================================
+     PANTALLA 1: PRECIOS DE INGREDIENTES
+     ============================================= -->
+<div class="pnt on" id="pnt-precios">
+  <p class="stit">Precios de ingredientes</p>
+  <p class="ssub">Tocá cualquier precio para cambiarlo</p>
+  <div class="uact" id="uact"></div>
+  <div class="card"><p class="ctit">🌾 Harinas y almidones</p><div id="g-harinas"></div></div>
+  <div class="card"><p class="ctit">🧂 Básicos</p><div id="g-basicos"></div></div>
+  <div class="card"><p class="ctit">🧈 Grasas</p><div id="g-grasas"></div></div>
+  <div class="card"><p class="ctit">🥚 Proteínas y lácteos</p><div id="g-proteinas"></div></div>
+  <div class="card"><p class="ctit">🍬 Rellenos y especiales</p><div id="g-especiales"></div></div>
+  <div class="card"><p class="ctit">🌿 Sabores y extras</p><div id="g-extras"></div></div>
+  <button class="btnp" onclick="guardarPrecios()">Guardar precios</button>
+</div>
+
+<!-- =============================================
+     PANTALLA 2: COSTOS POR PRODUCTO
+     ============================================= -->
+<div class="pnt" id="pnt-costos">
+  <p class="stit">Costos de producción</p>
+  <p class="ssub">Tocá un producto para ver el desglose</p>
+  <div id="lista-prod"></div>
+</div>
+
+<!-- =============================================
+     PANTALLA 3: EDITOR DE RECETAS
+     ============================================= -->
+<div class="pnt" id="pnt-recetas">
+  <div id="rec-bloqueado">
+    <div class="card" style="text-align:center;padding:30px 18px">
+      <p style="font-size:38px;margin-bottom:8px">🔒</p>
+      <p class="stit">Solo el administrador</p>
+      <p class="ssub" style="margin-bottom:0">Las recetas solo las puede cambiar el administrador.</p>
+    </div>
+  </div>
+  <div id="rec-screen" style="display:none">
+    <div style="display:flex;align-items:center;margin-bottom:4px">
+      <p class="stit" style="flex:1">Editor de recetas</p>
+    </div>
+    <p class="ssub">Tocá una receta para editarla</p>
+    <div class="card" id="lista-rec"></div>
+  </div>
+</div>
+
+<!-- =============================================
+     PANTALLA 4: OTROS COSTOS
+     ============================================= -->
+<div class="pnt" id="pnt-otros">
+  <p class="stit">Otros costos</p>
+  <p class="ssub">Valores que afectan todos los cálculos</p>
+
+  <div class="card">
+    <p class="ctit">⚡ Energía eléctrica</p>
+    <div class="aii">
+      <label class="alb">Costo por minuto de máquina ($)</label>
+      <p class="adsc">Recibo de luz ÷ minutos totales de máquinas al mes.</p>
+      <input type="number" class="ain" id="aj-luz" value="148" inputmode="numeric">
+    </div>
+  </div>
+  <div class="card">
+    <p class="ctit">🔥 Gas</p>
+    <div class="aii">
+      <label class="alb">Costo por minuto de horno/freidora ($)</label>
+      <p class="adsc">Calculado del recibo Bioagrícola.</p>
+      <input type="number" class="ain" id="aj-gas" value="27" inputmode="numeric">
+    </div>
+  </div>
+  <div class="card">
+    <p class="ctit">👷 Mano de obra</p>
+    <div class="aii">
+      <label class="alb">Valor de 1 hora de trabajo ($)</label>
+      <p class="adsc">Salario mensual ÷ días ÷ horas.</p>
+      <input type="number" class="ain" id="aj-labor" value="5931" inputmode="numeric">
+    </div>
+  </div>
+  <div class="card">
+    <p class="ctit">📊 Umbrales de rentabilidad</p>
+    <p style="font-size:12px;color:var(--gris);margin-bottom:10px;line-height:1.5">
+      Definí a partir de qué porcentaje el margen es bueno o bajo.
+    </p>
+    <div class="mgrow">
+      <div class="mgcard">
+        <div class="mgl">Margen bueno a partir de</div>
+        <div style="font-size:18px;font-weight:800;margin-top:4px">
+          <input type="number" class="ain2" id="umb-bueno" value="30" min="0" max="100"> %
+        </div>
+      </div>
+      <div class="mgcard">
+        <div class="mgl">Margen bajo hasta</div>
+        <div style="font-size:18px;font-weight:800;margin-top:4px">
+          <input type="number" class="ain2" id="umb-bajo" value="0" min="0" max="100"> %
+        </div>
+      </div>
+    </div>
+    <p style="font-size:11px;color:var(--gris);margin-top:8px">Por debajo de 0% = pérdida.</p>
+  </div>
+  <button class="btnp" onclick="guardarAjustes()">Guardar cambios</button>
+
+  <div class="card" style="margin-top:12px">
+    <p class="ctit">ℹ️ Acerca de</p>
+    <p style="font-size:13px;color:var(--gris);line-height:1.6">
+      Los precios se guardan en este celular. Las recetas se guardan en la nube (Firebase) protegidas con tu cuenta de Google.<br><br>
+      Versión 2.0 · Panadería Pan Dorado · 2025
+    </p>
+  </div>
+</div>
+
+<!-- NAVEGACIÓN INFERIOR -->
+<nav class="nav">
+  <button class="nb on" onclick="verPantalla('precios')" id="nav-precios">
+    <span class="ico">💰</span><span>Precios</span>
+  </button>
+  <button class="nb" onclick="verPantalla('costos')" id="nav-costos">
+    <span class="ico">📊</span><span>Costos</span>
+  </button>
+  <button class="nb" onclick="verPantalla('recetas')" id="nav-recetas">
+    <span class="ico">🍞</span><span>Recetas</span>
+  </button>
+  <button class="nb" onclick="verPantalla('otros')" id="nav-otros">
+    <span class="ico">⚙️</span><span>Otros costos</span>
+  </button>
+</nav>
+
+<!-- MODAL EDITOR DE RECETA -->
+<div class="modal" id="modal-rec">
+  <div class="mbox" id="mbox-content"></div>
+</div>
+
+<!-- =============================================
+     PANTALLA DE INICIO DE SESIÓN
+     ============================================= -->
+<div class="login" id="login">
+  <div class="login-in">
+    <div class="login-marca">
+      <div class="pan">🍞</div>
+      <h2 class="login-tit">Pan Dorado</h2>
+      <p class="login-sub">Costos de la panadería</p>
+    </div>
+    <div class="login-card">
+      <p class="hola">Bienvenido</p>
+      <p class="expl">Entrá con tu cuenta de Google para ver los costos y las recetas.</p>
+
+      <!-- Botón principal: en modo real abre Google; en demo muestra las cuentas de prueba -->
+      <button class="gbtn" id="btn-google" onclick="iniciarSesion()">
+        <span class="g">G</span> Entrar con Google
+      </button>
+
+      <!-- Cuentas de prueba (solo modo demo) -->
+      <div class="cuentas" id="cuentas" hidden>
+        <p class="cuentas-tit">Elegí una cuenta de prueba</p>
+        <button class="cuenta" onclick="entrarDemo('daniel@ejemplo.com')">
+          <span class="av">D</span>
+          <span><span class="nm">Daniel · Administrador</span><span class="co">daniel@ejemplo.com</span></span>
+        </button>
+        <button class="cuenta" onclick="entrarDemo('panaderia@ejemplo.com')">
+          <span class="av">P</span>
+          <span><span class="nm">Panadería · Equipo</span><span class="co">panaderia@ejemplo.com</span></span>
+        </button>
+        <button class="cuenta" onclick="entrarDemo('curioso@ejemplo.com')">
+          <span class="av" style="background:var(--gris)">?</span>
+          <span><span class="nm">Alguien sin permiso</span><span class="co">curioso@ejemplo.com</span></span>
+        </button>
+      </div>
+
+      <p class="login-msg" id="login-msg" hidden></p>
+    </div>
+    <p class="login-info" id="login-info"></p>
+  </div>
+</div>
+
+<script>
+// =============================================
+// CONFIGURACIÓN DE FIREBASE
+// Estos datos los sacamos de la consola de Firebase
+// cuando registramos la app web "Pan Dorado Costos".
+// El apiKey NO es un secreto — es como la dirección
+// del edificio. La seguridad la dan las REGLAS de Firestore.
+// =============================================
+const firebaseConfig = {
+  apiKey: "AIzaSyAYNNPezPKOR40x7CHhwgigVbSocuRRDPs",
+  authDomain: "pan-dorado-ab5cd.firebaseapp.com",
+  projectId: "pan-dorado-ab5cd",
+  storageBucket: "pan-dorado-ab5cd.firebasestorage.app",
+  messagingSenderId: "673091178865",
+  appId: "1:673091178865:web:db24a97cb037ea9e1ca6d0"
+};
+
+// =============================================
+// DETECCIÓN DE MODO: ¿Firebase está disponible?
+// Si los scripts de Firebase cargaron → modo real (producción)
+// Si no cargaron (por ejemplo en el prototipo) → modo demo
+// =============================================
+const MODO_REAL = typeof firebase !== 'undefined';
+
+// Correo del administrador (el que puede editar recetas)
+const ADMIN_EMAIL = 'pan.dorado.villavicencio@gmail.com';
+
+// Variables de Firebase (solo se usan en modo real)
+let db, auth, provider;
+
+if (MODO_REAL) {
+  firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+  db   = firebase.firestore();
+  provider = new firebase.auth.GoogleAuthProvider();
+}
+
+// Mostrar info del modo en la pantalla de login
+const infoEl = document.getElementById('login-info');
+if (MODO_REAL) {
+  infoEl.textContent = '🔒 Modo producción: tu cuenta de Google se verifica con Firebase.';
+  infoEl.style.background = 'var(--verde-claro)';
+  infoEl.style.color = 'var(--verde)';
+} else {
+  infoEl.textContent = '🧪 Modo demostración: el login con Google está simulado. Desplegá en GitHub Pages para usar el login real.';
+}
+
+// =============================================
+// DATOS: INGREDIENTES (igual que antes)
+// =============================================
+const ING = {
+  harina_trigo:    { n:'Harina de trigo',        p:1430,  u:'libra',   c:'bulto 100 lb',    g:'harinas' },
+  almidon:         { n:'Almidón',                p:6184,  u:'libra',   c:'25 lb',            g:'harinas' },
+  fecula:          { n:'Fécula',                 p:2600,  u:'libra',   c:'25 lb',            g:'harinas' },
+  harina_maiz:     { n:'Harina de maíz',         p:2000,  u:'libra',   c:'1 kg',             g:'harinas' },
+  premezcla_bono:  { n:'Premezcla pan de bono',  p:5900,  u:'libra',   c:'25 lb',            g:'harinas' },
+  premezcla:       { n:'Premezcla general',       p:5000,  u:'libra',   c:'2.5 kg',           g:'harinas' },
+  premezcla_bun:   { n:'Premezcla buñuelo',      p:3800,  u:'libra',   c:'1 @',              g:'harinas' },
+  azucar:          { n:'Azúcar',                 p:1790,  u:'libra',   c:'bulto 100 lb',    g:'basicos' },
+  sal:             { n:'Sal',                    p:77,    u:'onza',    c:'6 lb',              g:'basicos' },
+  agua:            { n:'Agua',                   p:333,   u:'litro',   c:'factura mensual',   g:'basicos' },
+  levadura:        { n:'Levadura',               p:344,   u:'onza',    c:'1 lb',              g:'basicos' },
+  polvo_hornear:   { n:'Polvo de hornear',       p:513,   u:'onza',    c:'1 kg',              g:'basicos' },
+  avena:           { n:'Avena',                  p:2200,  u:'libra',   c:'2 lb',              g:'basicos' },
+  grasa:           { n:'Grasa',                  p:4667,  u:'libra',   c:'15 kg',             g:'grasas'  },
+  vitina:          { n:'Vitina (margarina)',      p:5200,  u:'libra',   c:'5 lb',              g:'grasas'  },
+  huevos:          { n:'Huevos',                 p:467,   u:'unidad',  c:'cubeta 30 und',     g:'proteinas' },
+  queso_c:         { n:'Queso costeño',          p:9000,  u:'libra',   c:'1 lb',              g:'proteinas' },
+  queso_dc:        { n:'Queso doble crema',      p:9000,  u:'libra',   c:'5 lb',              g:'proteinas' },
+  jamon:           { n:'Jamón',                  p:13100, u:'libra',   c:'1 lb',              g:'proteinas' },
+  salchichas:      { n:'Salchichas',             p:2013,  u:'unidad',  c:'paquete 11 und',    g:'proteinas' },
+  chicharron:      { n:'Chicharrón',             p:4200,  u:'libra',   c:'1 lb',              g:'proteinas' },
+  pollo:           { n:'Pollo',                  p:8500,  u:'libra',   c:'1 lb',              g:'proteinas' },
+  cuajada:         { n:'Cuajada',                p:4000,  u:'libra',   c:'30 kg',             g:'proteinas' },
+  leche:           { n:'Leche',                  p:6000,  u:'litro',   c:'1 L',               g:'proteinas' },
+  bocadillo:       { n:'Bocadillo',              p:2923,  u:'libra',   c:'6 kg',              g:'especiales' },
+  arequipe:        { n:'Arequipe',               p:10000, u:'libra',   c:'2.5 kg',            g:'especiales' },
+  chocolate:       { n:'Chocolate',              p:13550, u:'libra',   c:'1 kg',              g:'especiales' },
+  coco:            { n:'Coco',                   p:4000,  u:'libra',   c:'1 kg',              g:'especiales' },
+  fresa:           { n:'Fresas',                 p:7500,  u:'libra',   c:'1 lb',              g:'especiales' },
+  uva_pasa:        { n:'Uva pasa',               p:7150,  u:'libra',   c:'2 lb',              g:'especiales' },
+  witopy:          { n:'Crema Witopy',            p:20350, u:'litro',   c:'0.5 L',             g:'especiales' },
+  esencia:         { n:'Esencia',                p:500,   u:'tapa',    c:'0.5 L',             g:'extras' },
+  colorante:       { n:'Colorante',              p:500,   u:'tapa',    c:'500g',              g:'extras' },
+  sabor:           { n:'Saborizante',            p:1000,  u:'onza',    c:'aprox',             g:'extras' },
+};
+
+// =============================================
+// RECETAS DE EJEMPLO (inventadas)
+// Las recetas reales NO están aquí: se leen desde
+// Firebase. Estos ejemplos solo se usan si no hay
+// recetas guardadas todavía en la base de datos.
+// =============================================
+const REC_EJEMPLO = [
+  { id:'ej_sencillo', n:'Pan Sencillo (ejemplo)', e:'🥖', u:100, gas:true,
+    i:[{id:'harina_trigo',c:8,u:'libra'},{id:'sal',c:2,u:'onza'},{id:'azucar',c:1,u:'libra'},{id:'grasa',c:1,u:'libra'},{id:'agua',c:2,u:'litro'},{id:'levadura',c:2,u:'onza'}],
+    h:20, am:10, ci:4, ba:0, ht:2, pv:500 },
+  { id:'ej_dulce', n:'Pan Dulce (ejemplo)', e:'🥥', u:60, gas:true,
+    i:[{id:'harina_trigo',c:5,u:'libra'},{id:'sal',c:1,u:'onza'},{id:'azucar',c:2,u:'libra'},{id:'grasa',c:1,u:'libra'},{id:'agua',c:1,u:'litro'},{id:'levadura',c:1,u:'onza'},{id:'huevos',c:4,u:'unidad'}],
+    h:20, am:10, ci:3, ba:0, ht:1.5, pv:800 },
+  { id:'ej_queso', n:'Pan de Queso (ejemplo)', e:'🧀', u:50, gas:true,
+    i:[{id:'harina_trigo',c:4,u:'libra'},{id:'sal',c:1,u:'onza'},{id:'azucar',c:1,u:'libra'},{id:'agua',c:1,u:'litro'},{id:'levadura',c:1,u:'onza'},{id:'huevos',c:3,u:'unidad'},{id:'queso_c',c:1,u:'libra'}],
+    h:20, am:5, ci:0, ba:0, ht:1, pv:1200 }
+];
+
+// =============================================
+// CUENTAS DE DEMO (solo se usan cuando Firebase
+// no está disponible — modo demostración)
+// =============================================
+const CUENTAS_DEMO = [
+  { correo:'daniel@ejemplo.com',    nombre:'Daniel',    rol:'admin'  },
+  { correo:'panaderia@ejemplo.com', nombre:'Panadería', rol:'lector' },
+  { correo:'curioso@ejemplo.com',   nombre:'Curioso',   rol:null     }
+];
+
+// =============================================
+// ESTADO de la app (cambia mientras se usa)
+// =============================================
+let precios  = {};
+let pventa   = {};
+let ajustes  = { luz:148, gas:27, labor:5931, umbBueno:30, umbBajo:0 };
+let recetas  = [];
+let sesion   = null;   // { correo, nombre, rol }
+
+// =============================================
+// CAPA DE DATOS — El objeto "Nube"
+// Toda la app le pide cosas a Nube. Nube decide
+// si usar Firebase (modo real) o localStorage (demo).
+// Así el resto del código no necesita saber dónde
+// están los datos: solo dice "Nube, dame las recetas"
+// y Nube se encarga.
+// =============================================
+const Nube = {
+
+  // Leer todas las recetas desde la base de datos
+  async leerRecetas() {
+    if (MODO_REAL) {
+      // ---- FIREBASE: leer el documento "recetas" de Firestore ----
+      try {
+        const doc = await db.collection('datos').doc('recetas').get();
+        if (doc.exists && doc.data().lista) {
+          return doc.data().lista;
+        }
+      } catch(err) {
+        // Si Firestore rechaza la lectura (sin permiso), capturamos el error
+        if (err.code === 'permission-denied') {
+          toast('🚫 Tu cuenta no tiene permiso para ver recetas');
+          return [];
+        }
+        console.error('Error leyendo recetas:', err);
+      }
+      // Si no hay recetas aún, devolver los ejemplos
+      return JSON.parse(JSON.stringify(REC_EJEMPLO));
+
+    } else {
+      // ---- DEMO: leer de localStorage ----
+      try {
+        const g = localStorage.getItem('pd_demo_recetas');
+        if (g) return JSON.parse(g);
+      } catch(e) {}
+      return JSON.parse(JSON.stringify(REC_EJEMPLO));
+    }
+  },
+
+  // Guardar todas las recetas en la base de datos
+  async guardarRecetas(lista) {
+    if (!sesion || sesion.rol !== 'admin') return false;
+
+    if (MODO_REAL) {
+      // ---- FIREBASE: escribir en Firestore ----
+      try {
+        await db.collection('datos').doc('recetas').set({ lista });
+        return true;
+      } catch(err) {
+        console.error('Error guardando recetas:', err);
+        toast('❌ Error guardando en la nube');
+        return false;
+      }
+
+    } else {
+      // ---- DEMO: guardar en localStorage ----
+      try {
+        localStorage.setItem('pd_demo_recetas', JSON.stringify(lista));
+      } catch(e) {}
+      return true;
+    }
+  }
+};
+
+// =============================================
+// Guardar recetas (llama a Nube, maneja errores)
+// Se ejecuta "en el fondo" — no bloquea la pantalla
+// =============================================
+function persistirRecetas() {
+  Nube.guardarRecetas(recetas).then(ok => {
+    if (!ok) toast('🔒 Tu cuenta no puede cambiar recetas');
+  }).catch(err => {
+    toast('❌ Error: ' + err.message);
+  });
+}
+
+// =============================================
+// INICIO DE SESIÓN
+// =============================================
+
+// Botón principal "Entrar con Google"
+function iniciarSesion() {
+  if (MODO_REAL) {
+    // ---- FIREBASE: abrir ventana de Google real ----
+    entrarConGoogle();
+  } else {
+    // ---- DEMO: mostrar cuentas de prueba ----
+    document.getElementById('cuentas').hidden = false;
+    document.getElementById('login-msg').hidden = true;
+  }
+}
+
+// Login real con Firebase Auth
+async function entrarConGoogle() {
+  const msg = document.getElementById('login-msg');
+  msg.hidden = true;
+
+  try {
+    // Abre la ventana de Google para elegir cuenta
+    const result = await auth.signInWithPopup(provider);
+    const user = result.user;
+
+    // Determinar el rol según el correo
+    const rol = (user.email === ADMIN_EMAIL) ? 'admin' : 'lector';
+
+    sesion = {
+      correo: user.email,
+      nombre: user.displayName || user.email.split('@')[0],
+      rol: rol
+    };
+
+    await abrirApp();
+
+  } catch(err) {
+    msg.hidden = false;
+    if (err.code === 'auth/popup-closed-by-user') {
+      msg.textContent = 'Se cerró la ventana de Google. Intentá de nuevo.';
+    } else if (err.code === 'auth/unauthorized-domain') {
+      msg.textContent = 'Este dominio no está autorizado. Desplegá la app en GitHub Pages para usar el login real.';
+    } else {
+      msg.textContent = 'Error: ' + err.message;
+    }
+  }
+}
+
+// Login en modo demo (cuentas simuladas)
+function entrarDemo(correo) {
+  const cuenta = CUENTAS_DEMO.find(c => c.correo === correo);
+  const msg = document.getElementById('login-msg');
+  if (!cuenta || !cuenta.rol) {
+    msg.hidden = false;
+    msg.textContent = '🚫 Esta cuenta no tiene permiso. No se cargó ninguna receta.';
+    return;
+  }
+  sesion = cuenta;
+  try { localStorage.setItem('pd_demo_sesion', cuenta.correo); } catch(e) {}
+  abrirApp();
+}
+
+// Abrir la app después de autenticarse
+async function abrirApp() {
+  // Mostrar indicador de carga
+  document.getElementById('login').innerHTML = `
+    <div class="login-in" style="text-align:center;padding-top:120px">
+      <div class="cargando"><div class="spin"></div></div>
+      <p style="margin-top:16px;color:var(--cafe-medio);font-weight:600">Cargando recetas...</p>
+    </div>`;
+
+  // Leer las recetas desde la nube (o localStorage en demo)
+  recetas = await Nube.leerRecetas();
+
+  // Asignar precios de venta guardados
+  recetas.forEach(r => { if (pventa[r.id] == null) pventa[r.id] = r.pv; });
+
+  // Ocultar login, mostrar app
+  document.getElementById('login').hidden = true;
+  document.getElementById('usr').hidden = false;
+
+  // Mostrar badge de modo y nombre
+  const badge = document.getElementById('usr-badge');
+  if (MODO_REAL) {
+    badge.textContent = 'FIREBASE';
+    badge.className = 'usr-badge real';
+  } else {
+    badge.textContent = 'DEMO';
+    badge.className = 'usr-badge demo';
+  }
+  document.getElementById('usr-nom').textContent = sesion.nombre;
+
+  renderPrecios();
+  renderCostos();
+  pintarRecetasSegunRol();
+  verPantalla('precios');
+}
+
+// Cerrar sesión
+function salir() {
+  if (MODO_REAL && auth) {
+    auth.signOut();
+  }
+  sesion = null;
+  recetas = [];
+  try { localStorage.removeItem('pd_demo_sesion'); } catch(e) {}
+
+  // Recargar para volver a la pantalla de login limpia
+  location.reload();
+}
+
+// Mostrar/ocultar editor de recetas según el rol
+function pintarRecetasSegunRol() {
+  const admin = !!sesion && sesion.rol === 'admin';
+  document.getElementById('rec-bloqueado').style.display = admin ? 'none' : 'block';
+  document.getElementById('rec-screen').style.display    = admin ? 'block' : 'none';
+  if (admin) renderRecetas();
+}
+
+// =============================================
+// FUNCIONES DE CÁLCULO (sin cambios)
+// =============================================
+function fp(v) {
+  return '$' + Math.round(v).toLocaleString('es-CO');
+}
+
+function cargar() {
+  try {
+    const ps = localStorage.getItem('pd_precios');
+    precios = ps ? JSON.parse(ps) : {};
+    Object.keys(ING).forEach(id => { if (precios[id] == null) precios[id] = ING[id].p; });
+
+    const pv = localStorage.getItem('pd_ventas');
+    pventa = pv ? JSON.parse(pv) : {};
+
+    const aj = localStorage.getItem('pd_ajustes');
+    if (aj) ajustes = { ...ajustes, ...JSON.parse(aj) };
+
+    document.getElementById('aj-luz').value    = ajustes.luz;
+    document.getElementById('aj-gas').value    = ajustes.gas;
+    document.getElementById('aj-labor').value  = ajustes.labor;
+    document.getElementById('umb-bueno').value = ajustes.umbBueno;
+    document.getElementById('umb-bajo').value  = ajustes.umbBajo;
+
+    const f = localStorage.getItem('pd_fecha');
+    if (f) {
+      document.getElementById('uact').textContent   = 'Actualizado el ' + f;
+      document.getElementById('hdrsub').textContent = 'Actualizado el ' + f;
+    } else {
+      document.getElementById('hdrsub').textContent = 'Ingresá los precios y guardá';
+    }
+  } catch(e) {}
+}
+
+function badge(pct) {
+  if (pct >= ajustes.umbBueno) return ['bvd', 'Buen margen'];
+  if (pct >= 0)                return ['bam', 'Margen bajo'];
+  return ['bro', 'Debajo del costo'];
+}
+
+function calcIng(ing) {
+  const precioBase = precios[ing.id] ?? ING[ing.id]?.p ?? 0;
+  const unidadBase = ING[ing.id]?.u;
+  let cantidad = ing.c;
+  if      (ing.u === 'kg'    && unidadBase === 'libra') cantidad *= 2;
+  else if (ing.u === 'libra' && unidadBase === 'kg')    cantidad /= 2;
+  else if (ing.u === 'onza'  && unidadBase === 'libra') cantidad /= 16;
+  else if (ing.u === 'libra' && unidadBase === 'onza')  cantidad *= 16;
+  return precioBase * cantidad;
+}
+
+function calcRec(r) {
+  const ci = r.i.reduce((s, ing) => s + calcIng(ing), 0);
+  const minLuz = (r.h||0) + (r.am||0) + (r.ci||0) + (r.ba||0);
+  const minGas = r.gas ? (r.h || 0) : 0;
+  const ce  = minLuz * ajustes.luz;
+  const cg  = minGas * ajustes.gas;
+  const cl  = r.ht   * ajustes.labor;
+  const tot = ci + ce + cg + cl;
+  return { ci, ce, cg, cl, tot, pu: tot / r.u };
+}
+
+// =============================================
+// RENDER: PRECIOS
+// =============================================
+const GRUPOS = {
+  harinas:'g-harinas', basicos:'g-basicos', grasas:'g-grasas',
+  proteinas:'g-proteinas', especiales:'g-especiales', extras:'g-extras'
+};
+
+function renderPrecios() {
+  Object.keys(GRUPOS).forEach(g => {
+    const el = document.getElementById(GRUPOS[g]);
+    el.innerHTML = '';
+    Object.keys(ING).forEach(id => {
+      const ing = ING[id];
+      if (ing.g !== g) return;
+      const div = document.createElement('div');
+      div.className = 'iitem';
+      div.innerHTML = `
+        <div class="inm">
+          <div class="nm">${ing.n}</div>
+          <div class="un">Por ${ing.u} · ${ing.c}</div>
+        </div>
+        <div class="pw">
+          <span>$</span>
+          <input type="number" class="pi" id="pi-${id}"
+                 value="${precios[id] ?? ing.p}"
+                 inputmode="numeric" min="0">
+        </div>`;
+      el.appendChild(div);
+    });
+  });
+}
+
+function guardarPrecios() {
+  Object.keys(ING).forEach(id => {
+    const el = document.getElementById('pi-' + id);
+    if (el) precios[id] = parseFloat(el.value) || 0;
+  });
+  localStorage.setItem('pd_precios', JSON.stringify(precios));
+  const f = new Date().toLocaleDateString('es-CO', {
+    day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+  });
+  localStorage.setItem('pd_fecha', f);
+  document.getElementById('uact').textContent   = 'Actualizado el ' + f;
+  document.getElementById('hdrsub').textContent = 'Actualizado el ' + f;
+  renderCostos();
+  toast('Precios guardados');
+}
+
+function guardarAjustes() {
+  ajustes.luz      = parseFloat(document.getElementById('aj-luz').value)    || 148;
+  ajustes.gas      = parseFloat(document.getElementById('aj-gas').value)    || 27;
+  ajustes.labor    = parseFloat(document.getElementById('aj-labor').value)  || 5931;
+  ajustes.umbBueno = parseFloat(document.getElementById('umb-bueno').value) || 30;
+  ajustes.umbBajo  = parseFloat(document.getElementById('umb-bajo').value)  || 0;
+  localStorage.setItem('pd_ajustes', JSON.stringify(ajustes));
+  renderCostos();
+  toast('Cambios guardados');
+}
+
+// =============================================
+// RENDER: COSTOS
+// =============================================
+function renderCostos() {
+  const ct = document.getElementById('lista-prod');
+  ct.innerHTML = '';
+  recetas.forEach(r => {
+    const cs = calcRec(r);
+    const pv = pventa[r.id] ?? r.pv;
+    const mg = pv - cs.pu;
+    const pct = pv > 0 ? (mg / pv) * 100 : 0;
+    const [bc, bt] = badge(pct);
+
+    let maqRows = '';
+    if (r.h  > 0) maqRows += `<div class="dfil"><span class="dc">Horno — luz (${r.h} min)</span><span class="dv">${fp(r.h * ajustes.luz)}</span></div>`;
+    if (r.gas && r.h > 0) maqRows += `<div class="dfil"><span class="dc">Horno — gas (${r.h} min)</span><span class="dv">${fp(r.h * ajustes.gas)}</span></div>`;
+    if (r.am > 0) maqRows += `<div class="dfil"><span class="dc">Amasadora (${r.am} min)</span><span class="dv">${fp(r.am * ajustes.luz)}</span></div>`;
+    if (r.ci > 0) maqRows += `<div class="dfil"><span class="dc">Cilindro (${r.ci} min)</span><span class="dv">${fp(r.ci * ajustes.luz)}</span></div>`;
+    if (r.ba > 0) maqRows += `<div class="dfil"><span class="dc">Batidora (${r.ba} min)</span><span class="dv">${fp(r.ba * ajustes.luz)}</span></div>`;
+
+    const d = document.createElement('div');
+    d.className = 'pcard';
+    d.innerHTML = `
+      <div class="phdr" onclick="togDet('${r.id}')">
+        <span class="pemi">${r.e}</span>
+        <div class="pinf">
+          <div class="pnm">${r.n}</div>
+          <div class="pun">${r.u} unidades por tanda</div>
+          <span class="baj ${bc}">${bt}</span>
+        </div>
+        <div class="pprc">
+          <div class="clb">costo c/u</div>
+          <div class="cvl">${fp(cs.pu)}</div>
+          <div class="fch" id="fch-${r.id}">▼</div>
+        </div>
+      </div>
+      <div class="pdet" id="det-${r.id}">
+        <p class="dsec">Ingredientes</p>
+        ${r.i.map(ing => `
+          <div class="dfil">
+            <span class="dc">${ING[ing.id]?.n || ing.id} (${ing.c} ${ing.u})</span>
+            <span class="dv">${fp(calcIng(ing))}</span>
+          </div>`).join('')}
+        <p class="dsec">Gas, luz y trabajo</p>
+        ${maqRows}
+        <div class="dfil">
+          <span class="dc">Mano de obra (${r.ht} h)</span>
+          <span class="dv">${fp(r.ht * ajustes.labor)}</span>
+        </div>
+        <p class="dsec">Totales</p>
+        <div class="dfil"><span class="dc">Costo total tanda</span><span class="dv">${fp(cs.tot)}</span></div>
+        <div class="dfil"><span class="dc">Costo por unidad</span><span class="dv">${fp(cs.pu)}</span></div>
+        <p class="dsec">Precio de venta</p>
+        <div class="pvrow">
+          <label>Precio que cobrás:</label>
+          <input type="number" class="pvi" id="pvi-${r.id}"
+                 value="${pv}" inputmode="numeric"
+                 onchange="updVenta('${r.id}')">
+        </div>
+        <div class="mrg ${bc}" id="mrg-${r.id}">
+          Ganancia: ${fp(mg)} por unidad (${Math.round(pct)}%)
+        </div>
+      </div>`;
+    ct.appendChild(d);
+  });
+}
+
+function togDet(id) {
+  document.getElementById('det-' + id).classList.toggle('vis');
+  document.getElementById('fch-' + id).classList.toggle('rt');
+}
+
+function updVenta(id) {
+  const pv  = parseFloat(document.getElementById('pvi-' + id).value) || 0;
+  pventa[id] = pv;
+  localStorage.setItem('pd_ventas', JSON.stringify(pventa));
+  const r   = recetas.find(x => x.id === id);
+  if (!r) return;
+  const cs  = calcRec(r);
+  const mg  = pv - cs.pu;
+  const pct = pv > 0 ? (mg / pv) * 100 : 0;
+  const [bc] = badge(pct);
+  const el  = document.getElementById('mrg-' + id);
+  el.textContent = `Ganancia: ${fp(mg)} por unidad (${Math.round(pct)}%)`;
+  el.className   = `mrg ${bc}`;
+}
+
+// =============================================
+// RENDER: RECETAS
+// =============================================
+function renderRecetas() {
+  const ct = document.getElementById('lista-rec');
+  ct.innerHTML = `
+    <button class="newrec" onclick="nuevaReceta()">+ Nueva receta</button>
+    <p class="ctit">Tocá una receta para editarla</p>`;
+  if (recetas.length === 0) {
+    ct.innerHTML += '<p class="ssub" style="text-align:center;padding:16px 0">No hay recetas. Tocá "Nueva receta" para crear la primera.</p>';
+  }
+  recetas.forEach(r => {
+    const d = document.createElement('div');
+    d.className = 'ritem';
+    d.onclick = () => abrirEditor(r.id);
+    d.innerHTML = `
+      <span class="remi">${r.e}</span>
+      <div style="flex:1">
+        <div class="rnm">${r.n}</div>
+        <div class="run">${r.u} unidades · ${r.i.length} ingredientes</div>
+      </div>
+      <span style="color:var(--gris);font-size:18px">›</span>`;
+    ct.appendChild(d);
+  });
+}
+
+function abrirEditor(id) {
+  const r = recetas.find(x => x.id === id);
+  if (!r) return;
+  const UNIDS = ['libra','onza','kg','litro','unidad','tapa'];
+  const ingRows = r.i.map((ing, idx) => `
+    <div class="ingrow" id="irow-${idx}">
+      <select onchange="updIngId('${id}',${idx},this.value)">
+        ${Object.keys(ING).map(k =>
+          `<option value="${k}"${k === ing.id ? ' selected' : ''}>${ING[k].n}</option>`
+        ).join('')}
+      </select>
+      <input type="number" value="${ing.c}" min="0" step="0.01" inputmode="decimal"
+             onchange="updIngC('${id}',${idx},this.value)">
+      <select onchange="updIngU('${id}',${idx},this.value)">
+        ${UNIDS.map(u => `<option${u === ing.u ? ' selected' : ''}>${u}</option>`).join('')}
+      </select>
+      <button class="delibtn" onclick="delIng('${id}',${idx})">✕</button>
+    </div>`).join('');
+
+  document.getElementById('mbox-content').innerHTML = `
+    <div class="mhdr">
+      <span class="mtit">${r.e} ${r.n}</span>
+      <button class="mcls" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="mfld">
+      <label>Emoji (el dibujito del producto)</label>
+      <input id="ed-emoji" value="${r.e}" maxlength="4" oninput="updREmoji('${id}',this.value)">
+    </div>
+    <div class="mfld">
+      <label>Nombre del producto</label>
+      <input id="ed-nombre" value="${r.n}" oninput="updRNom('${id}',this.value)">
+    </div>
+    <div class="mfld">
+      <label>Unidades que produce esta tanda</label>
+      <input type="number" value="${r.u}" min="1" inputmode="numeric"
+             oninput="updRU('${id}',this.value)">
+    </div>
+    <p class="seclab">Ingredientes</p>
+    <div id="ed-ings">${ingRows}</div>
+    <button class="addibtn" onclick="addIng('${id}')">+ Agregar ingrediente</button>
+    <p class="seclab">Tiempo de máquinas (minutos)</p>
+    <div class="maqgrid">
+      <div class="maqf"><label>Horno</label>
+        <input type="number" value="${r.h}" min="0" inputmode="numeric" oninput="updMaq('${id}','h',this.value)"></div>
+      <div class="maqf"><label>Amasadora</label>
+        <input type="number" value="${r.am}" min="0" inputmode="numeric" oninput="updMaq('${id}','am',this.value)"></div>
+      <div class="maqf"><label>Cilindro</label>
+        <input type="number" value="${r.ci}" min="0" inputmode="numeric" oninput="updMaq('${id}','ci',this.value)"></div>
+      <div class="maqf"><label>Batidora</label>
+        <input type="number" value="${r.ba}" min="0" inputmode="numeric" oninput="updMaq('${id}','ba',this.value)"></div>
+    </div>
+    <div class="mfld" style="margin-top:12px">
+      <label>Horas de mano de obra</label>
+      <input type="number" value="${r.ht}" min="0" step="0.5" inputmode="decimal"
+             oninput="updMaq('${id}','ht',this.value)">
+    </div>
+    <button class="btnp" style="margin-top:12px" onclick="guardarReceta('${id}')">
+      Guardar receta
+    </button>
+    <div class="zborrar" id="zborrar">
+      <button class="borrarbtn" onclick="pedirBorrar('${id}')">Eliminar esta receta</button>
+    </div>
+    <div style="height:24px"></div>`;
+  document.getElementById('modal-rec').classList.add('vis');
+}
+
+function cerrarModal() { document.getElementById('modal-rec').classList.remove('vis'); }
+function updREmoji(id, v) { const r = recetas.find(x => x.id===id); if(r) r.e = v.trim() || '🍞'; }
+function updRNom(id, v)   { const r = recetas.find(x => x.id===id); if(r) r.n = v; }
+function updRU(id, v)     { const r = recetas.find(x => x.id===id); if(r) r.u = parseFloat(v)||r.u; }
+function updMaq(id, k, v) { const r = recetas.find(x => x.id===id); if(r) r[k] = parseFloat(v)||0; }
+function updIngId(id, idx, v) { const r = recetas.find(x => x.id===id); if(r) r.i[idx].id = v; }
+function updIngC(id, idx, v)  { const r = recetas.find(x => x.id===id); if(r) r.i[idx].c  = parseFloat(v)||0; }
+function updIngU(id, idx, v)  { const r = recetas.find(x => x.id===id); if(r) r.i[idx].u  = v; }
+
+function nuevaReceta() {
+  const id = 'rec_' + Date.now();
+  recetas.push({
+    id, n:'Nueva receta', e:'🍞', u:10, gas:true,
+    i:[{ id:'harina_trigo', c:1, u:'libra' }],
+    h:0, am:0, ci:0, ba:0, ht:1, pv:1000
+  });
+  pventa[id] = 1000;
+  persistirRecetas();
+  localStorage.setItem('pd_ventas', JSON.stringify(pventa));
+  renderRecetas();
+  renderCostos();
+  abrirEditor(id);
+}
+
+function pedirBorrar(id) {
+  document.getElementById('zborrar').innerHTML = `
+    <p class="zpreg">¿Seguro que querés eliminar esta receta? No se puede deshacer.</p>
+    <div class="zbtns">
+      <button class="borrarbtn" onclick="borrarReceta('${id}')">Sí, eliminar</button>
+      <button class="cancelbtn" onclick="abrirEditor('${id}')">No, volver</button>
+    </div>`;
+  document.getElementById('mbox-content').scrollTop = 9999;
+}
+
+function borrarReceta(id) {
+  recetas = recetas.filter(r => r.id !== id);
+  delete pventa[id];
+  persistirRecetas();
+  localStorage.setItem('pd_ventas', JSON.stringify(pventa));
+  cerrarModal();
+  renderRecetas();
+  renderCostos();
+  toast('Receta eliminada');
+}
+
+function delIng(id, idx) {
+  const r = recetas.find(x => x.id===id);
+  if (!r) return;
+  r.i.splice(idx, 1);
+  abrirEditor(id);
+}
+
+function addIng(id) {
+  const r = recetas.find(x => x.id===id);
+  if (!r) return;
+  r.i.push({ id:'harina_trigo', c:1, u:'libra' });
+  abrirEditor(id);
+  setTimeout(() => document.getElementById('mbox-content').scrollTop = 9999, 50);
+}
+
+function guardarReceta(id) {
+  persistirRecetas();
+  renderRecetas();
+  cerrarModal();
+  renderCostos();
+  toast('Receta guardada');
+}
+
+// =============================================
+// NAVEGACIÓN
+// =============================================
+function verPantalla(n) {
+  document.querySelectorAll('.pnt').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
+  document.getElementById('pnt-' + n).classList.add('on');
+  document.getElementById('nav-' + n).classList.add('on');
+  if (n === 'costos') {
+    Object.keys(ING).forEach(id => {
+      const el = document.getElementById('pi-' + id);
+      if (el) precios[id] = parseFloat(el.value) || precios[id];
+    });
+    renderCostos();
+  }
+  if (n === 'recetas') pintarRecetasSegunRol();
+  window.scrollTo(0, 0);
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('vis');
+  setTimeout(() => t.classList.remove('vis'), 2300);
+}
+
+// =============================================
+// INICIO: cargar y arrancar
+// =============================================
+cargar();
+renderPrecios();
+renderCostos();
+
+// En modo real, escuchar cambios de autenticación de Firebase
+if (MODO_REAL) {
+  auth.onAuthStateChanged(user => {
+    if (user && !sesion) {
+      // El usuario ya tenía sesión abierta en Firebase
+      sesion = {
+        correo: user.email,
+        nombre: user.displayName || user.email.split('@')[0],
+        rol: (user.email === ADMIN_EMAIL) ? 'admin' : 'lector'
+      };
+      abrirApp();
+    }
+  });
+} else {
+  // En modo demo, restaurar sesión guardada
+  try {
+    const guardada = localStorage.getItem('pd_demo_sesion');
+    const c = CUENTAS_DEMO.find(x => x.correo === guardada);
+    if (c && c.rol) { sesion = c; abrirApp(); }
+  } catch(e) {}
+}
+</script>
